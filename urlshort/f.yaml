@@ -1,0 +1,4 @@
+- path: /g
+  url: https://www.google.com/
+- path: /s
+  url: https://symfony.com/doc/current/components/yaml/yaml_format.html

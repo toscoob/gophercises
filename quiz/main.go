@@ -1,53 +1,99 @@
 package main
 
 import (
-	"bufio"
 	"encoding/csv"
+	"flag"
 	"fmt"
-	"io"
-	"log"
+	"math/rand"
 	"os"
 	"strings"
+	"time"
 )
 
+//go build . && ./quiz
+
 func main() {
-	csvfile, err := os.Open("problems.csv")
+	rand.Seed(time.Now().UnixNano())
+
+	csvFilename := flag.String("csv", "problems.csv", "a csv file in the format of 'question,answer'")
+	shuffle := flag.Bool("shuffle", false, "shuffle problems")
+	duration := flag.Int("d", 30, "quiz duration")
+	flag.Parse()
+
+	csvfile, err := os.Open(*csvFilename)
 	if err != nil {
-		log.Fatalln("Couldn't open the csv file", err)
+		exit(fmt.Sprintf("Failed to open the CSV file: %s\n", *csvFilename))
 	}
 
 	// Parse the file
 	r := csv.NewReader(csvfile)
 
-	questions := 0
-	answers := 0
+	lines, err := r.ReadAll()
+	if err != nil {
+		exit("Failed to parse the provided CSV file.")
+	}
 
-	reader := bufio.NewReader(os.Stdin)
+	problems := parseLines(lines)
+	if *shuffle {
+		fmt.Println("Shuffle problems")
+		shuffleProblems(problems)
+	}
 
-	// Iterate through the records
-	for {
-		// Read each record from csv
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-		questions++
-		//fmt.Printf("Question: %s Answer %s\n", record[0], record[1])
-		fmt.Printf("Question #%d: %s = ", questions, record[0])
-		text, _ := reader.ReadString('\n')
-		//fmt.Println(text)
-		if strings.TrimRight(text, "\n") == record[1] {
-			fmt.Println("Correct")
-			answers++
-		} else {
-			fmt.Printf("Wrong. Correct answer: %s\n", record[1])
+	correct := 0
+
+	fmt.Println("Press enter to start test")
+	fmt.Scanf("\n")
+	timer := time.NewTimer(time.Duration(*duration) * time.Second)
+
+problemloop:
+	for i, p := range problems {
+		fmt.Printf("Question #%d: %s =\n", i+1, p.q)
+
+		answerCh := make(chan string)
+		go func() {
+			var answer string
+			fmt.Scanf("%s\n", &answer)
+			answerCh <- answer
+		}()
+
+		select {
+		case <-timer.C:
+			fmt.Println()
+			break problemloop
+		case answer := <-answerCh:
+			if answer == p.a {
+				fmt.Println("Correct")
+				correct++
+			} else {
+				fmt.Println("Wrong")
+			}
 		}
 	}
 
-	csvfile.Close()
+	fmt.Printf("You scored %d out of %d.\n", correct, len(problems))
+}
 
-	fmt.Printf("Correct answers: %d/%d\n", answers, questions)
+func shuffleProblems(problems []problem) {
+	rand.Shuffle(len(problems), func(i, j int) { problems[i], problems[j] = problems[j], problems[i] })
+}
+
+func parseLines(lines [][]string) []problem {
+	ret := make([]problem, len(lines))
+	for i, line := range lines {
+		ret[i] = problem{
+			q: line[0],
+			a: strings.TrimSpace(line[1]),
+		}
+	}
+	return ret
+}
+
+type problem struct {
+	q string
+	a string
+}
+
+func exit(msg string) {
+	fmt.Println(msg)
+	os.Exit(1)
 }

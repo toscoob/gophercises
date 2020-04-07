@@ -4,6 +4,7 @@ import (
 	//"fmt"
 	"net/http"
 	"gopkg.in/yaml.v2"
+	"encoding/json"
 )
 
 // MapHandler will return an http.HandlerFunc (which also
@@ -28,10 +29,6 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 type urlentry struct {
 	Path string `yaml:"path"`
 	Url string `yaml:"url"`
-}
-
-type urlentries struct {
-	E []urlentry `entries`
 }
 
 func parseYAML(yml []byte) ([]urlentry, error){
@@ -75,6 +72,20 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 		return nil, err
 	}
 	pathMap, _ := buildMap(parsedYaml)
+	//fmt.Println(pathMap)
+	return MapHandler(pathMap, fallback), nil
+
+	//return fallback.ServeHTTP, nil
+}
+
+func JSONHandler(jsn []byte, fallback http.Handler) (http.HandlerFunc, error) {
+	var u []urlentry
+	err := json.Unmarshal(jsn, &u)
+	if err != nil {
+		return nil, err
+	}
+
+	pathMap, _ := buildMap(u)
 	//fmt.Println(pathMap)
 	return MapHandler(pathMap, fallback), nil
 

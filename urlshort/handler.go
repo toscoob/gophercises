@@ -1,10 +1,10 @@
 package urlshort
 
 import (
-	//"fmt"
 	"net/http"
 	"gopkg.in/yaml.v2"
 	"encoding/json"
+	"github.com/boltdb/bolt"
 )
 
 // MapHandler will return an http.HandlerFunc (which also
@@ -88,6 +88,28 @@ func JSONHandler(jsn []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	pathMap, _ := buildMap(u)
 	//fmt.Println(pathMap)
 	return MapHandler(pathMap, fallback), nil
+}
 
-	//return fallback.ServeHTTP, nil
+func DBHandler(db *bolt.DB, fallback http.Handler) (http.HandlerFunc, error) {
+	var u []urlentry
+
+	err := db.View(func(tx *bolt.Tx) error {
+		// Assume bucket exists and has keys
+		b := tx.Bucket([]byte("URLS"))
+
+		b.ForEach(func(k, v []byte) error {
+			newUrl := urlentry{string(k), string(v)}
+			u = append(u, newUrl)
+			return nil
+		})
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	pathMap, _ := buildMap(u)
+	//fmt.Println(pathMap)
+	return MapHandler(pathMap, fallback), nil
 }

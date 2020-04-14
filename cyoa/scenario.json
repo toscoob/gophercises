@@ -1,14 +1,95 @@
 {
   "intro": {
-    "title": "A title for that story arc. Think of it like a chapter title.",
+    "title": "Cave entrance.",
     "story": [
-      "A series of paragraphs, each represented as a string in a slice.",
-      "This is a new paragraph in this particular story arc."
+      "You are at the cave entrance.",
+      "There is dark passage in front of you."
     ],
     "options": [
       {
-        "text": "the text to render for this option. eg 'venture down the dark passage'",
-        "arc": "the name of the story arc to navigate to. This will match the story-arc key at the very root of the JSON document"
+        "text": "Go forward",
+        "arc": "cave1"
+      }
+    ]
+  },
+  "cave1": {
+    "title": "Crossroads.",
+    "story": [
+      "Cave splits here.",
+      "Into left and right entries."
+    ],
+    "options": [
+      {
+        "text": "Go left",
+        "arc": "cave1l1"
+      },
+      {
+        "text": "Go right",
+        "arc": "cave1r1"
+      },
+      {
+        "text": "Go back",
+        "arc": "intro"
+      }
+    ]
+  },
+  "cave1l1": {
+    "title": "The goblin.",
+    "story": [
+      "You see the goblin threateningly approaching.",
+      "What will you do."
+    ],
+    "options": [
+      {
+        "text": "Fight",
+        "arc": "gameover"
+      },
+      {
+        "text": "Flee",
+        "arc": "cave1"
+      }
+    ]
+  },
+  "cave1r1": {
+    "title": "Path to treasure.",
+    "story": [
+      "You see the sign with text and arrow.",
+      "It says 'Treasure further down the way'."
+    ],
+    "options": [
+      {
+        "text": "Go into direction indicated by arrow",
+        "arc": "cave1r2"
+      },
+      {
+        "text": "Go back",
+        "arc": "cave1"
+      }
+    ]
+  },
+  "cave1r2": {
+    "title": "The treasure.",
+    "story": [
+      "You fall into the trap.",
+      "Spikes at the bottom instantly kill you."
+    ],
+    "options": [
+      {
+        "text": "You died",
+        "arc": "gameover"
+      }
+    ]
+  },
+  "gameover": {
+    "title": "The bad end.",
+    "story": [
+      "You perished in the depth of the cave.",
+      "You can start over though."
+    ],
+    "options": [
+      {
+        "text": "Start over",
+        "arc": "intro"
       }
     ]
   }

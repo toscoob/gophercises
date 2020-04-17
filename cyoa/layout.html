@@ -1,0 +1,13 @@
+<html>
+<h3>{{.Title}}</h3>
+<p>
+    {{range .Story}}
+        {{.}}<br>
+    {{end}}
+</p>
+<ul>
+    {{range .Options}}
+        <li><a href="/cyoa?arc={{.Arc}}">{{.Text}}</a></li>
+    {{end}}
+</ul>
+</html>

@@ -5,34 +5,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"github.com/gophercises/cyoa"
+	"log"
+	"net/http"
 	"strconv"
+	"html/template"
 )
 
 // go run main/main.go
 
-// write console player which shows story entry and waits for input
-
-func main() {
-	jsonFilename := flag.String("j", "scenario.json", "json file with scenario")
-
-	flag.Parse()
-
-	jsonContent, err := ioutil.ReadFile(*jsonFilename)
-	if err != nil {
-		panic(err)
-	}
-
-	story, err := cyoa.ReadStoryJSON(jsonContent)
-	if err != nil {
-		panic(err)
-	}
-	/*
-		for k, v := range story {
-			fmt.Printf("arc: %s\ncontents: %s\n", k, &v)
-		}
-
-	*/
-
+func playStoryConsole(story map[string]cyoa.StoryEntry) {
 	if arc, ok := story["intro"]; ok {
 		for {
 			fmt.Println(&arc)
@@ -65,5 +46,35 @@ func main() {
 	} else {
 		fmt.Println("Story intro not found")
 	}
+}
 
+
+
+func main() {
+	jsonFilename := flag.String("j", "scenario.json", "json file with scenario")
+
+	flag.Parse()
+
+	jsonContent, err := ioutil.ReadFile(*jsonFilename)
+	if err != nil {
+		panic(err)
+	}
+
+	story, err := cyoa.ReadStoryJSON(jsonContent)
+	if err != nil {
+		panic(err)
+	}
+	/*
+		for k, v := range story {
+			fmt.Printf("arc: %s\ncontents: %s\n", k, &v)
+		}
+
+	*/
+	//playStoryConsole(story)
+	tmpl := template.Must(template.ParseFiles("layout.html"))
+	sh := &cyoa.StoryHandler{Story: story, CurrentArc: "intro", Tmpl: *tmpl}
+	fmt.Println("Starting the server on :8080")
+	http.Handle("/cyoa", sh)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+	//_ = http.ListenAndServe(":8080", sh)
 }

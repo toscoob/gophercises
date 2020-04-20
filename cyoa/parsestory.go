@@ -10,14 +10,18 @@ import (
 type StoryEntry struct {
 	Title   string   `json:"title"`
 	Story   []string `json:"story"`
-	Options []struct {
-		Text string `json:"text"`
-		Arc  string `json:"arc"`
-	} `json:"options"`
+	Options []Option `json:"options"`
 }
 
-func ReadStoryJSON(in []byte) (map[string]StoryEntry, error){
-	story := make(map[string]StoryEntry)
+type Option struct {
+	Text string `json:"text"`
+	Arc  string `json:"arc"`
+}
+
+type Story map[string]StoryEntry
+
+func ReadStoryJSON(in []byte) (Story, error){
+	story := make(Story)
 
 	err := json.Unmarshal(in, &story)
 	if err != nil {
@@ -36,7 +40,6 @@ func ReadStoryJSON(in []byte) (map[string]StoryEntry, error){
 			}
 		}
 	}
-
 
 	return story, nil
 }

@@ -72,7 +72,7 @@ func main() {
 	*/
 	//playStoryConsole(story)
 	tmpl := template.Must(template.ParseFiles("layout.html"))
-	sh := &cyoa.StoryHandler{Story: story, CurrentArc: "intro", Tmpl: *tmpl}
+	sh := &cyoa.StoryHandler{Story: story, Tmpl: tmpl}
 	fmt.Println("Starting the server on :8080")
 	http.Handle("/cyoa", sh)
 	log.Fatal(http.ListenAndServe(":8080", nil))

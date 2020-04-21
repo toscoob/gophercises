@@ -16,6 +16,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer file.Close()
 
 	links, err := linkparser.ParseHTML(file)
 	if err != nil {

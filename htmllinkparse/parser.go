@@ -35,7 +35,7 @@ func parseHrefs(n *html.Node, links *[]Link) {
 
 func parseText(n *html.Node, link *Link){
 	if n.Type == html.TextNode {
-		link.Text += strings.TrimSpace(n.Data)
+		link.Text += strings.Join(strings.Fields(n.Data), " ") + " "//strings.TrimSpace(n.Data)
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		parseText(c, link)

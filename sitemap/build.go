@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 func parseHrefs(n *html.Node) []string {
@@ -41,7 +42,16 @@ func ParseHTML(in io.Reader) ([]string, error) {
 	return links, nil
 }
 
+func hostMatch(baseUrl url.URL, checkUrl url.URL) bool {
+	return checkUrl.Host == baseUrl.Host || checkUrl.Host == "" || checkUrl.Host == "www." + baseUrl.Host
+}
+
+func emptyPath(u url.URL) bool {
+	return strings.TrimSpace(u.Path) == "" || u.Path == "/"
+}
+
 func InspectURL(u url.URL, visited map[string]struct{}, depth uint, maxDepth uint) error {
+	fmt.Printf("###InspectURL depth %d ###\n", depth)
 	resp, err := http.Get(u.String())
 	if err != nil {
 		return err
@@ -71,16 +81,35 @@ func InspectURL(u url.URL, visited map[string]struct{}, depth uint, maxDepth uin
 			continue
 		}
 		_, isVisited := visited[childUrl.Path]
-		if !isVisited && (childUrl.Host == u.Host || childUrl.Host == "") && childUrl.Path != "" {
-			fmt.Printf("Inspect\nhost: %s\npath: %s\n------\n", childUrl.Host, childUrl.Path)
-			visited[childUrl.Path] = struct{}{}
+		isVisited = isVisited || emptyPath(*childUrl)
+		sameHost := hostMatch(u, *childUrl)
+		if !isVisited && sameHost {
+			fmt.Printf("Inspect and add \nhost: %s path: %s\n------\n", childUrl.Host, childUrl.Path)
+			//visited[childUrl.Path] = struct{}{}
 			//TODO recurse here
 			//todo ignore empty path
 			if depth < maxDepth || maxDepth == 0 {
-				//InspectURL(childUrl, visited, depth + 1, maxDepth)
+				childUrl.Scheme = u.Scheme
+				childUrl.Host = u.Host //in case it's relative link
+				err = InspectURL(*childUrl, visited, depth + 1, maxDepth)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
 			}
 		} else {
-			fmt.Printf("Link %s not inspectable\n------\n", l)
+			var reason string
+			switch {
+			case isVisited:
+				reason = "visited"
+			case emptyPath(*childUrl):
+				reason = "empty path"
+			case !sameHost:
+				reason = "different host"
+			default:
+				reason = "unknown"
+			}
+			fmt.Printf("Link %s not inspectable because %s\n------\n", l, reason)
 		}
 	}
 
@@ -99,7 +128,7 @@ func ComposeXML(host string, visited map[string]struct{}) ([]byte, error) {
 	}
 
 	var xmlurls []XMLUrl
-	for u, _ := range visited {
+	for u := range visited {
 		//todo maybe save full url to visited
 		xmlurls = append(xmlurls, XMLUrl{Loc : "https://" + host + u})
 	}

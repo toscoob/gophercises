@@ -6,6 +6,7 @@ import (
 	"github.com/gophercises/sitemap"
 	"log"
 	"net/url"
+	"os"
 )
 
 //call example:
@@ -34,7 +35,13 @@ func main() {
 		log.Fatal(err)
 	}
 	//todo write to file
+	//fmt.Println(string(byteXML))
+	f, err := os.Create("out.xml") // create/truncate the file
+	if err != nil { log.Fatal(err) } // panic if error
+	defer f.Close() // make sure it gets closed after
+	fmt.Fprintln(f, string(byteXML))
 	fmt.Println(string(byteXML))
+
 
 	//fmt.Println("Collected links:")
 	//for l, _ := range visited{

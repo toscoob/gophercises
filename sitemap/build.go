@@ -118,11 +118,9 @@ func InspectURL(u url.URL, visited map[string]struct{}, depth uint, maxDepth uin
 
 func ComposeXML(host string, visited map[string]struct{}) ([]byte, error) {
 	type XMLUrl struct {
-		XMLName xml.Name `xml:"url"`
 		Loc     string   `xml:"loc"`
 	}
 	type UrlSet struct {
-		XMLName xml.Name `xml:"urlset"`
 		Xmlns   string   `xml:"xmlns,attr"`
 		Urls    []XMLUrl `xml:"url"`
 	}

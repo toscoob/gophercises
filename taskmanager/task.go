@@ -1,6 +1,7 @@
 package taskmanager
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
@@ -13,9 +14,16 @@ import (
 
 var tasksBucket = []byte("tasks")
 
+//func itob(v uint64) []byte {
+//	s := strconv.FormatUint(v, 10)
+//	return []byte(s)
+//}
+
+// itob returns an 8-byte big endian representation of v.
 func itob(v uint64) []byte {
-	s := strconv.FormatUint(v, 10)
-	return []byte(s)
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, v)
+	return b
 }
 
 //func btoi(b []byte) uint64 {
@@ -49,6 +57,7 @@ func dbFile() string {
 }
 
 //todo set complete date instead of deleting tasks
+//todo move db init code to main
 //--- ADD
 type AddCommand struct{}
 

@@ -15,7 +15,9 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
-	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
+	golang.org/x/mod v0.4.0 // indirect
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974
 	golang.org/x/sys v0.0.0-20201231184435-2d18734c6014 // indirect
+	golang.org/x/tools v0.0.0-20210107193943-4ed967dd8eff // indirect
 	gopkg.in/yaml.v2 v2.3.0
 )

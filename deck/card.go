@@ -59,72 +59,77 @@ func (c Card) String() string {
 	return fmt.Sprintf("%s of %ss", c.Rank, c.Suit)
 }
 
-type DeckOption func(*[]Card)
 
-//todo looks kinda ugly
-func SortDeck(less func(i, j int) bool) DeckOption {
-	return func(deck *[]Card) {
-		sort.Slice(*deck, func(i, j int) bool {
-			return less(int((*deck)[i].Rank), int((*deck)[j].Rank))
-		})
+type DeckOption func([]Card) []Card
+
+func (c Card) absRank() int {
+	return int(c.Suit) * int(maxRank) + int(c.Rank)
+}
+
+func LessDefault(deck []Card) func(i, j int) bool {
+	return func(i, j int) bool{
+		return deck[i].absRank() < deck[j].absRank()
+	}
+}
+
+func SortDeck(less func (deck []Card) func(i, j int) bool) DeckOption {
+	return func(deck []Card) []Card {
+		sort.Slice(deck, less(deck))
+		return deck
 	}
 }
 
 func Shuffle() DeckOption {
-	return func(deck *[]Card) {
-		n := len(*deck)
+	return func(deck []Card) []Card {
+		n := len(deck)
 		for i := 0; i < n; i++ {
 			// choose index uniformly in [i, N-1]
 			r := i + rand.Intn(n-i)
-			(*deck)[r], (*deck)[i] = (*deck)[i], (*deck)[r]
+			(deck)[r], (deck)[i] = (deck)[i], (deck)[r]
 		}
+		return deck
 	}
 }
 
 func AddJokers(n int) DeckOption {
-	return func(deck *[]Card) {
+	return func(deck []Card) []Card {
 		for i := 0; i < n; i++ {
-			*deck = append(*deck, Card{Suit: Joker})
+			deck = append(deck, Card{Suit: Joker})
 		}
+		return deck
 	}
 }
 
-func Filter(ranks ...Rank) DeckOption {
-	return func(deck *[]Card) {
+func Filter(f func (c Card) bool) DeckOption {
+	return func(deck []Card) []Card {
 		var filteredDeck []Card
 
 		//just create another deck with filtered cards
 		// more optimal approach possible, but ok for now
-		for _, card := range *deck {
-			doFilter := false
-
-			for _, r := range ranks {
-				if card.Rank == r {
-					doFilter = true
-					break
-				}
-			}
-
-			if !doFilter {
+		for _, card := range deck {
+			if !f(card) {
 				filteredDeck = append(filteredDeck, card)
 			}
 		}
 
-		*deck = filteredDeck
+		return filteredDeck
 	}
 }
 
-func AddCopies(n int) DeckOption {
-	return func(deck *[]Card) {
-		l := len(*deck)
-		for i := 0; i < n; i++ {
-			*deck = append(*deck, (*deck)[:l]...)
+func Multiply(n int) DeckOption {
+	return func(deck []Card) []Card {
+		if n >= 2 {
+			l := len(deck)
+			for i := 0; i < n-1; i++ {
+				deck = append(deck, deck[:l]...)
+			}
 		}
+
+		return deck
 	}
 }
 
 func New(opts ...DeckOption) []Card {
-	//todo add functional opts
 	var res []Card
 
 	// make default 52 card deck
@@ -136,7 +141,7 @@ func New(opts ...DeckOption) []Card {
 	//fmt.Println("deck before", res)
 
 	for _, opt := range opts {
-		opt(&res)
+		res = opt(res)
 	}
 
 	//fmt.Println("deck after", res)

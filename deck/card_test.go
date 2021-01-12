@@ -2,6 +2,7 @@ package deck
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 )
 
@@ -57,15 +58,6 @@ func TestFilters(t *testing.T){
 		}
 	})
 
-	t.Run("shuffle", func(t *testing.T) {
-		//todo find out how to test shuffling
-		want := 52
-		ans := New(Shuffle())
-		if len(ans) != want {
-			t.Errorf("got %d, want %d", len(ans), want)
-		}
-	})
-
 	t.Run("multiply", func(t *testing.T) {
 		want := 52 * 3
 		ans := New(Multiply(3))
@@ -87,4 +79,23 @@ func TestFilters(t *testing.T){
 			t.Errorf("got %d, want %d", ans, want)
 		}
 	})
+}
+
+func TestShuffle(t *testing.T){
+	want := [] struct {
+		idx int
+		c Card
+	}{
+		{ 0, Card{Three, Spade}},
+		{ 8, Card{Jack, Heart}},
+		{ 15, Card{Queen, Spade}},
+		{ 51, Card{Three, Club}},
+	}
+	ans := New(Shuffle(rand.New(rand.NewSource(0))))
+
+	for _, w := range want {
+		if ans[w.idx] != w.c {
+			t.Error("got", ans[w.idx], "want", w.c)
+		}
+	}
 }

@@ -79,12 +79,21 @@ func SortDeck(less func (deck []Card) func(i, j int) bool) DeckOption {
 	}
 }
 
-func Shuffle() DeckOption {
+func Shuffle(r *rand.Rand) DeckOption {
 	return func(deck []Card) []Card {
 		n := len(deck)
+
+		randNum := func (n int) int {
+			if r != nil {
+				return r.Intn(n)
+			}
+
+			return rand.Intn(n)
+		}
+
 		for i := 0; i < n; i++ {
 			// choose index uniformly in [i, N-1]
-			r := i + rand.Intn(n-i)
+			r := i + randNum(n-i)
 			(deck)[r], (deck)[i] = (deck)[i], (deck)[r]
 		}
 		return deck

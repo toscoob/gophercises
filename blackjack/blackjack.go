@@ -6,51 +6,107 @@ import (
 )
 
 //player controller - ai/human
-//display cards and calc score
+
 
 //hit - deal new card
 //stand - next player
+const ochko = 21
 
 type Player struct {
 	hand []deck.Card
 }
 
+type Dealer struct {
+	Player
+}
+
 type Game struct {
 	deck []deck.Card
 	players []Player
-	dealer Player
+	dealer Dealer
 }
 
 func (p Player) Score() int {
-	//sum up scores based on rank
-	//separately add Ace value
-	return 0
+	score := 0
+	numAces := 0
+
+	for _, card := range p.hand {
+		switch {
+		case card.Rank == deck.Ace:
+			score += 1
+			numAces += 1
+		case card.Rank >= deck.Two && card.Rank <= deck.Ten:
+			score += int(card.Rank)
+		case card.Rank >= deck.Jack:
+			score += 10
+		}
+	}
+
+	//ace can be 1 or 11
+	if numAces > 0 && score + 10 <= ochko {
+		score += 10
+	}
+
+	return score
 }
 
 func (p Player) String() string {
-	s := fmt.Sprintf("Player %s: ", "empty") //todo add player name
+	s := fmt.Sprintf("Player %s:\n", "Noname") //todo add player name
 	for _, c := range p.hand {
-		s = s + fmt.Sprint(c) + " "
+		s = s + "\t" + fmt.Sprint(c) + "\n"
 	}
 
 	return s
 }
 
-func (g * Game) Play() {
+func (d Dealer) String() string {
+	s := fmt.Sprintf("Dealer:\n")
+	//only show first dealer card
+	if len(d.hand) > 0 {
+		s = s + "\t" + fmt.Sprint(d.hand[1]) + "\n"
+	}
+
+	return s
+}
+
+func (g Game) String() string {
+	var s string
+	for _, p := range g.players {
+		s += fmt.Sprintln(p)
+	}
+	//todo only show one card for dealer
+	s += fmt.Sprintln(g.dealer)
+
+	return s
+}
+
+func (g *Game) Play() {
 	//iterate players and calc result
 }
 
 func (g *Game) Init() {
-	//deal 2 cards for each player
+	g.deck = deck.New(deck.Multiply(2), deck.Shuffle(nil))
+
 	initialCards := 2
+
+	//reset player hands
+	for i, _ := range g.players {
+		g.players[i].hand = make([]deck.Card, initialCards, initialCards)
+	}
+	g.dealer.hand = make([]deck.Card, initialCards, initialCards)
+
+	for _, p := range g.players {
+		fmt.Println(len(p.hand))
+	}
+	//deal 2 cards for each player
 	numPlayers := len(g.players)
 
 	for i := 0; i<initialCards; i++ {
-		for j, p := range g.players {
+		for j, _ := range g.players {
 			cardIdx := initialCards * i + j
-			p.hand = append(p.hand, g.deck[cardIdx])
+			g.players[j].hand[i] = g.deck[cardIdx]
 		}
-		g.dealer.hand = append(g.dealer.hand, g.deck[initialCards * i + numPlayers])
+		g.dealer.hand[i] = g.deck[initialCards * i + numPlayers]
 	}
 
 	//"remove" dealed cards from deck. Instead could add index for current card or something
@@ -61,8 +117,6 @@ type GameOption func(*Game)
 
 func New(players int, opts ...GameOption) Game {
 	var g Game
-
-	g.deck = deck.New(deck.Multiply(2), deck.Shuffle(nil))
 
 	g.players = make([]Player, players, players)
 

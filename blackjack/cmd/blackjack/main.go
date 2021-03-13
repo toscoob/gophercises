@@ -1,17 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gophercises/blackjack"
+	"math/rand"
+	"time"
 )
 
 func main() {
+	rand.Seed(time.Now().UTC().UnixNano())
+
 	g := blackjack.New(1)
 	g.Init()
-	fmt.Println(g)
-	//init table inst
-	//deal cards
-	//for each player, do the moves, check victory
-	//dealer turn
-	//ask if quit/continue
+	g.Play()
 }
